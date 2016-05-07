@@ -1,0 +1,20 @@
+var config = {}
+
+config.port = '7080';
+config.as_uri = "http://localhost:7080/";
+config.ws_uri = "ws://localhost:8888/kurento";
+config.outputBitrate = 3000000;
+//the url of this server, this is where appRTC connects to
+config.appRTCUrl = '192.168.111.41:7080';
+//leave uris empty to not use turn
+config.turn = {
+	"username": "<username>",
+	"password": "<password>",
+	"uris": [
+		"turn:numb.viagenie.ca:3478",
+		"turn:numb.viagenie.ca:3478?transport=udp",
+		"turn:numb.viagenie.ca:3478?transport=tcp"
+	]
+};
+
+module.exports = config;

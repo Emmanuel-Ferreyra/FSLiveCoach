@@ -1,0 +1,27 @@
+/*
+ * (C) Copyright 2016.  All rights reserved.
+ * 
+ */
+
+{
+  "name": "FS_LiveCoach",
+  "version": "1.0.0",
+  "description": "FS Live Coach app",
+  "main": "index.html",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.2.1",      
+    "adapter.js": "v0.2.9",
+    "bootstrap": "~3.3.0",
+    "draggabilly": "~1.2.4",
+    "demo-console": "1.5.1",
+    "ekko-lightbox": "~3.3.0",
+    "kurento-utils": "master"
+  }
+}
