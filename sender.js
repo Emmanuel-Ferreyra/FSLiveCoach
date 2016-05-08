@@ -1,8 +1,3 @@
-/*
- * (C) Copyright 2016.  All rights reserved.
- * 
- */
-
 function Sender(settings) {
 	settings = settings ? settings : {};
 	this.sessionId = settings.sessionId ? settings.sessionId : null;

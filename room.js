@@ -1,8 +1,3 @@
-/*
- * (C) Copyright 2016.  All rights reserved.
- * 
- */
-
 var Receiver = require('./receiver');
 
 function Room(settings) {

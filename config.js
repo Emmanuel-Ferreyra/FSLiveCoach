@@ -1,15 +1,10 @@
-/*
- * (C) Copyright 2016.  All rights reserved.
- * 
- */
-
 var config = {}
 
 config.port = '8080';
 config.as_uri = "http://localhost:8080/";       //your kurento media connector (KMC) known also as application server (this server!)
 config.ws_uri = "ws://localhost:8888/kurento";  //your kurento media server (KMS)
 config.outputBitrate = 3000000;
-config.appRTC_url = '52.19.221.103:8080';       //the url of this server, this is where appRTC connects to
+config.appRTCUrl = '52.19.221.103:8080';       //the url of this server, this is where appRTC connects to
 //leave uris empty to not use turn
 config.turn = {
 	"username": "<username>",

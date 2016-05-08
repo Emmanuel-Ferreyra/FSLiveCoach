@@ -1,6 +1,6 @@
 /*
- * (C) Copyright 2016.  All rights reserved.
- * 
+ * (C) Copyright 2016. All rights reserved.
+ *
  */
 
 var express = require('express');
@@ -19,6 +19,10 @@ var Sender = require('./sender');
 var Receiver = require('./receiver');
 var Room = require('./room');
 
+// var as_uri = config.as_uri;
+var serverUrl = config.appRTCUrl;
+var ws_uri = config.ws_uri;
+var port = config.port;
 
 var kurentoClient = null;
 var rooms = [];
@@ -39,6 +43,11 @@ var msg_settings = {
       };
 
 var app = express();
+app.use(bodyParser.json({
+	type: 'text'
+}));
+
+app.use(cookieParser());
 
 var sessionHandler = session({
 	secret: 'none',
@@ -48,30 +57,16 @@ var sessionHandler = session({
 });
 
 app.use(sessionHandler);
-app.use(bodyParser.json({
-	type: 'text'
-}));
-app.use(cookieParser());
 
-/*
- * Server startup
- */
-
-// var as_uri = config.as_uri;
-var serverUrl = config.appRTC_url;
-var ws_uri = config.ws_uri;
-var port = config.port;
 var server = app.listen(port, function() {
-    console.info('---------------------------------------------');
-    console.info('FS Live Coach started');
-    console.info('Open http://' + serverUrl + ':' + port + ' with a WebRTC capable browser');
-    console.info('---------------------------------------------');
+	console.log('Server started on port', port);
 });
 
 app.use(function(req, res, next) {
-	console.info(req.protocol, req.method, req.path, req.get('Content-Type'));
+	console.log(req.protocol, req.method, req.path, req.get('Content-Type'));
 	next();
 });
+
 
 var wss = new ws.Server({
 	server: server,
@@ -87,97 +82,90 @@ wss.on('connection', function(ws) {
 
 	sessionHandler(request, response, function(err) {
 		sessionId = request.session.id;
-		console.info('Connection received with sessionId ' + sessionId);
+		console.log('Connection received with sessionId ' + sessionId);
 	});
 
 	ws.on('error', function(error) {
-		console.error('Connection ' + sessionId + ' error: ', error);
+		console.log('Connection ' + sessionId + ' error', error);
 		getRoomBySession(sessionId, function(err, room) {
-			stopReceive(room);
+			//stopReceive(room);
 			stopSend(room);
 		});
 	});
 
 	ws.on('close', function() {
-		console.info('Connection ' + sessionId + ' closed');
+		console.log('Connection ' + sessionId + ' closed');
 		getRoomBySession(sessionId, function(err, room) {
-			stopReceive(room);
+			//stopReceive(room);
 			stopSend(room);
 		});
 	});
 
 	ws.on('message', function(_message) {
 		var message = JSON.parse(_message);
-		console.info('Connection ' + sessionId + ' received message ', message);
+		console.log('wss ' + sessionId + ' received message ', message);
 		var clientId = message.clientid ? message.clientid : "empty";
 		var roomname = message.roomid ? message.roomid : "emptyID";
 
 		switch (message.cmd) {
 			case 'register':
-				console.info('Received message: register');
-				getRoom(roomname, function(error, room) {
-					if (error) {
-						console.error('Error: ' + error);
-						return ws.send(JSON.stringify({
+				console.log('register called');
+				getRoom(roomname, function(err, room) {
+					if (err) {
+						console.error(err);
+						ws.send(JSON.stringify({
 							msg: {},
 							error: err
 						}));
 					}
 					if (!room) {
-						console.error('Error: Room not found');
+						console.error("Room not found");
 						ws.send(JSON.stringify({
 							msg: {},
 							error: 'Room not found'
 						}));
 					}
 					if (!room.sender) {
-                        console.info('Different sender. Creating new sender - clientId:' + clientId);
 						room.sender = new Sender({
 							sessionId: sessionId,
 							clientId: clientId,
 							websocket: ws
 						});
 					} else {
-                        console.info('Existing sender - clientId:' + clientId);
 						room.sender.websocket = ws;
 						room.sender.clientId = clientId;
 						room.sender.sessionId = sessionId;
 					}
+					// console.log('sender created', room.sender);
+					// console.log(room);
 					//TODO: what if already offered?
 					if (room.senderSdpOffer) {
-						console.info('TODO: got the sdpOffer first');
+						console.log('TODO: got the sdpOffer first');
 					}
 				});
 				break;
 
 			case 'startWebRtc':
-				console.info('Received message: startWebRtc');
+				console.log('startWebRtc');
 				var sdpOffer = message.sdpOffer;
 				var roomName = message.roomName;
-				getRoom(roomName, function(error, room) {
-					if (error) {
-						console.error('Error: ' + error);
-						return ws.send(JSON.stringify({
-							msg: {},
-							error: err
-						}));
-					}                    
+				getRoom(roomName, function(err, room) {
 					if (!room) {
-                        console.error('Error: Room not found');
 						return ws.send(JSON.stringify({
 							id: 'error',
 							message: 'Room not found'
 						}));
 					}
+					// sessionId = request.session.id;
 					startWebRtc(room, sessionId, ws, sdpOffer, function(error, sdpAnswer) {
 						if (error) {
-							console.error('Error: ' + error);
+							console.log(error);
 							return ws.send(JSON.stringify({
 								id: 'error',
 								message: error
 							}));
 						}
-						console.info("startWebRtc response:", sdpAnswer);
+						console.log("startWebRtc response:", sdpAnswer);
 						ws.send(JSON.stringify({
 							id: 'startResponse',
 							sdpAnswer: sdpAnswer
@@ -188,16 +176,8 @@ wss.on('connection', function(ws) {
 
 			case 'onIceCandidate':
 				var roomName = message.roomName;
-				getRoom(roomName, function(error, room) {
-					if (error) {
-						console.error('Error: ' + error);
-						return ws.send(JSON.stringify({
-							msg: {},
-							error: err
-						}));
-					}                       
+				getRoom(roomName, function(err, room) {
 					if (!room) {
-                        console.error('Error: Room not found');
 						return ws.send(JSON.stringify({
 							id: 'error',
 							message: 'Room not found'
@@ -209,151 +189,135 @@ wss.on('connection', function(ws) {
 
 			case 'stop':
 				var roomName = message.roomName;
-				getRoom(roomName, function(error, room) {
-					if (error) {
-						console.error('Error: ' + error);
-						return ws.send(JSON.stringify({
-							msg: {},
-							error: err
-						}));
-					}                      
+				getRoom(roomName, function(err, room) {
 					if (room) {
-						stopReceive(room);
+						//stopReceive(room);
+                        stopSend(room);
 					}
 				});
 				break;
 
 			default:
-				console.info('something else called');
+				console.log('something else called');
 		}
 	});
 });
 
 app.all('/join/:roomname', function(req, res) {
-  console.info('join called', req.body);
+  console.log('join called', req.body);
   var roomName = req.params.roomname ? req.params.roomname : "empty";
 
 	//create room
-	getRoom(roomName, function(error, room) {
-		if (error) {
-			console.error('Error: ' + error);
+	getRoom(roomName, function(err, room) {
+		if (err) {
+			console.error(err);
 			return res.json({
 				"result": "ERROR"
 			});
 		}
 		if (!room) {
-            console.info('Room not found. Creating new room.');
 			room = new Room({
 				roomName: roomName
 			});
 			rooms.push(room);
 		}
+		console.log(room);
 
 		//generate a client ID
 		var clientId = shortid.generate();
 
 		var response = {
-            "params": {
-              "is_initiator": "true",
-              "room_link": "http://" + serverUrl + "/r/" + roomName,
-              "version_info": "{\"gitHash\": \"029b6dc4742cae3bcb6c5ac6a26d65167c522b9f\", \"branch\": \"master\", \"time\": \"Wed Dec 9 16:08:29 2015 +0100\"}",
-              "messages": [],
-              "error_messages": [],
-              "client_id": clientId,
-              "bypass_join_confirmation": "false",
-              "media_constraints": "{\"audio\": true, \"video\": true}",
-              "include_loopback_js": "",
-              "turn_url": "http://" + serverUrl + "/turn",
-              "is_loopback": "false",
-              "wss_url": "ws://" + serverUrl + "/ws",
-              "pc_constraints": "{\"optional\": []}",
-              "pc_config": "{\"rtcpMuxPolicy\": \"require\", \"bundlePolicy\": \"max-bundle\", \"iceServers\": []}",
-              "wss_post_url": "http://" + serverUrl + "",
-              "offer_options": "{}",
-              "warning_messages": [],
-              "room_id": roomName,
-              "turn_transports": ""
-            },
-            "result": "SUCCESS"
-        };
-        console.info('Sending response...');
+	    "params": {
+	      "is_initiator": "true",
+	      "room_link": "http://" + serverUrl + "/r/" + roomName,
+	      "version_info": "{\"gitHash\": \"029b6dc4742cae3bcb6c5ac6a26d65167c522b9f\", \"branch\": \"master\", \"time\": \"Wed Dec 9 16:08:29 2015 +0100\"}",
+	      "messages": [],
+	      "error_messages": [],
+	      "client_id": clientId,
+	      "bypass_join_confirmation": "false",
+	      "media_constraints": "{\"audio\": true, \"video\": true}",
+	      "include_loopback_js": "",
+	      "turn_url": "http://" + serverUrl + "/turn",
+	      "is_loopback": "false",
+	      "wss_url": "ws://" + serverUrl + "/ws",
+	      "pc_constraints": "{\"optional\": []}",
+	      "pc_config": "{\"rtcpMuxPolicy\": \"require\", \"bundlePolicy\": \"max-bundle\", \"iceServers\": []}",
+	      "wss_post_url": "http://" + serverUrl + "",
+	      "offer_options": "{}",
+	      "warning_messages": [],
+	      "room_id": roomName,
+	      "turn_transports": ""
+	    },
+	    "result": "SUCCESS"
+	  };
 		res.json(response);
 	});
 });
 
 app.all('/leave/:roomname/:clientId', function(req, res) {
-  console.info('leave called', req.body);
+  console.log('leave called', req.body);
   var roomName = req.params.roomname ? req.params.roomname : "empty";
   var clientId = req.params.clientId ? req.params.clientId : "emptyID";
-	getRoom(roomName, function(error, room) {
-		if (error) {
-			console.error('Error: ' + error);
-			return res.json({
-				"result": "ERROR"
-			});
-		}        
+	getRoom(roomName, function(err, room) {
 		if (room) {
-            console.info('Stop send.');
 			stopSend(room);
 		}
-        console.info('todo leave');
 		res.send('todo');
 	});
 });
 
 app.all('/turn', function(req, res) {
-  console.info('turn called', req.body);
+  console.log('turn called', req.body);
 
   var response = config.turn;
   res.json(response);
 });
 
 app.all('/message/:roomname/:clientId', function(req, res) {
-	console.info('message called', req.body.type);
+	console.log('message called', req.body.type);
 	var roomName = req.params.roomname ? req.params.roomname : "empty";
 	var clientId = req.params.clientId ? req.params.clientId : "emptyID";
 	var message = req.body;
-	getRoom(roomName, function(error, room) {
-		if (error) {
-            console.error('Error: ' + error);
+	getRoom(roomName, function(err, room) {
+		if (err) {
 			res.json({
 				"result": "ERROR",
-				"error": error
+				"error": err
 			});
 		}
 		if (!room) {
 			//I dunno
-            res.send('I dunno');
 		}
 
-		// console.info(message, roomName, id);
+		// console.log(message, roomName, id);
 		switch (message.type) {
 			case 'candidate':
 				var sender = room.sender;
-				console.info('candidate', message.candidate);
+				console.log('candidate', message.candidate);
 				var rewrittenCandidate = {
 					candidate: message.candidate,
 					sdpMid: 'sdparta_0',
 					sdpMLineIndex: message.label
 				};
+				// console.log(rewrittenCandidate);
 
 				var candidate = kurento.register.complexTypes.IceCandidate(rewrittenCandidate);
 
-				if (sender.webRtcEP) {
-					console.info('appRTC Ice Candidate. Adding ICE candidate', candidate);
-					sender.webRtcEP.addIceCandidate(candidate);
+				if (sender.webRtcEndpoint) {
+					console.info('appRTC Ice Candidate addIceCandidate', candidate);
+					sender.webRtcEndpoint.addIceCandidate(candidate);
 				} else {
 					//TODO:
-					console.info('appRTC Ice Candidate. Queueing ICE candidate', sender.candidateQueue);
+					console.info('appRTC Ice Candidate  Queueing candidate', sender.candidateQueue);
 					sender.candidateQueue.push(candidate);
 				}
 				break;
 			case 'offer':
 				if (room.sender && room.sender.websocket) {
 					var sender = room.sender;
-					console.info('offer. websocket is present');
+					console.log('yay websocket is present');
 					var onCandidate = function(event) {
-						// console.info("onCandidate");
+						// console.log("onCandidate");
 						var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
 						var candidateAnswer = {
 							msg: {
@@ -367,7 +331,7 @@ app.all('/message/:roomname/:clientId', function(req, res) {
 						sender.websocket.send(JSON.stringify(candidateAnswer));
 					};
 					startSendWebRtc(room, message.sdp, onCandidate, function(error, sdpAnswer) {
-						console.error('started webrtc in POST', error);
+						console.log('started webrtc in POST', error);
 						var sendSdpAnswer = {
 							msg: {
 								type: 'answer',
@@ -380,12 +344,12 @@ app.all('/message/:roomname/:clientId', function(req, res) {
 						// sendSendStatus();
 					});
 				} else {
-					console.info('No websocket is present');
+					console.log('no websocket is present');
 					room.senderSdpOffer = message.sdp;
 				}
 				break;
 			default:
-				console.info('default');
+				console.log('default');
 		}
 		//just send success
 		res.json({
@@ -400,7 +364,7 @@ function getKurentoClient(callback) {
 	}
 	kurento(ws_uri, function(error, _kurentoClient) {
 		if (error) {
-			console.error("Could not find media server at address " + ws_uri);
+			console.log("Could not find media server at address " + ws_uri);
 			return callback("Could not find media server at address" + ws_uri + ". Exiting with error " + error);
 		}
 
@@ -415,7 +379,7 @@ function getPipeline(room, callback) {
 	}
 
 	if (room.pipeline !== null) {
-		console.info('saved pipeline');
+		console.log('saved pipeline');
 		return callback(null, room.pipeline);
 	}
 	getKurentoClient(function(error, kurentoClient) {
@@ -424,7 +388,6 @@ function getPipeline(room, callback) {
 		}
 		kurentoClient.create('MediaPipeline', function(error, _pipeline) {
 			if (error) {
-                console.error('Error: ' + error);
 				return callback(error);
 			}
 			room.pipeline = _pipeline;
@@ -434,7 +397,7 @@ function getPipeline(room, callback) {
 };
 
 function getRoom(roomName, callback) {
-	console.info("Looking for room:", roomName);
+	console.log("Looking for room:", roomName);
 	for (var i = 0; i < rooms.length; i++) {
 		if (rooms[i].roomName == roomName) {
 			return callback(null, rooms[i]);
@@ -444,7 +407,7 @@ function getRoom(roomName, callback) {
 };
 
 function getRoomBySession(sessionId, callback) {
-	console.info("Looking for room with session:", sessionId);
+	console.log("Looking for room with session:", sessionId);
 	for (var i = 0; i < rooms.length; i++) {
 		if (rooms[i].sender && rooms[i].sender.sessionId == sessionId) {
 			return callback(null, rooms[i]);
@@ -466,37 +429,38 @@ function startSendWebRtc(room, sdpOffer, onCandidate, callback) {
 			if (error) {
 				return callback(error);
 			}
-			sender.webRtcEP = _webRtcEndpoint;
+			sender.webRtcEndpoint = _webRtcEndpoint;
 
 			console.info("Read queue:", sender.candidateQueue);
 			if (sender.candidateQueue) {
 				while (sender.candidateQueue.length) {
 					console.info("Adding candidate from queue.");
 					var candidate = sender.candidateQueue.shift();
-					sender.webRtcEP.addIceCandidate(candidate);
+					sender.webRtcEndpoint.addIceCandidate(candidate);
 				}
 			}
 
-			sender.webRtcEP.processOffer(sdpOffer, function(error, sdpAnswer) {
+			sender.webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
 				if (error) {
-					sender.webRtcEP.release();
+					sender.webRtcEndpoint.release();
 					return callback(error);
 				}
 
-				sender.webRtcEP.on('OnIceCandidate', function(event) {
+				sender.webRtcEndpoint.on('OnIceCandidate', function(event) {
 					onCandidate(event);
 				});
 
-				sender.webRtcEP.gatherCandidates(function(error) {
+				sender.webRtcEndpoint.gatherCandidates(function(error) {
 					if (error) {
-						stopReceive(sessionId);
+						//stopReceive(sessionId);
+                        stopSend(sessionId);
 						return callback(error);
 					}
 				});
 
 				console.info("Sending aerogear message...");           
                 sendNotification();
-				console.info("sending sdp answer");
+				console.log("sending sdp answer");
 				return callback(null, sdpAnswer);
 			});
 		});
@@ -509,7 +473,7 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
 	}
 
 	var sender = room.sender;
-	if (!sender || !sender.webRtcEP) {
+	if (!sender || !sender.webRtcEndpoint) {
 		return callback('No Sending Endpoint');
 	}
 
@@ -529,30 +493,30 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
 		if (error) {
 			return callback(error);
 		}
-		receiver.webRtcEP = _webRtcEndpoint;
+		receiver.webRtcEndpoint = _webRtcEndpoint;
 
 		if (receiver.candidateQueueVideo) {
 			while (receiver.candidateQueueVideo.length) {
 				console.info("Adding candidate from queue");
 				var candidate = receiver.candidateQueueVideo.shift();
-				receiver.webRtcEP.addIceCandidate(candidate);
+				receiver.webRtcEndpoint.addIceCandidate(candidate);
 			}
 		}
 
-		receiver.webRtcEP.processOffer(sdpOffer, function(error, sdpAnswer) {
+		receiver.webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
 			if (error) {
-				receiver.webRtcEP.release();
+				receiver.webRtcEndpoint.release();
 				return callback(error);
 			}
             console.info('4. Connecting receiver WebRtcEndpoint to sender WebRtcEndpoint');
-			sender.webRtcEP.connect(receiver.webRtcEP, function(error) {
+			sender.webRtcEndpoint.connect(receiver.webRtcEndpoint, function(error) {
 				if (error) {
-					receiver.webRtcEP.release();
-					console.info(error);
+					receiver.webRtcEndpoint.release();
+					console.log(error);
 					return callback(error);
 				}
 
-				receiver.webRtcEP.on('OnIceCandidate', function(event) {
+				receiver.webRtcEndpoint.on('OnIceCandidate', function(event) {
 					var candidate = kurento.register.complexTypes.IceCandidate(event.candidate);
 					ws.send(JSON.stringify({
 						id: 'iceCandidate',
@@ -560,18 +524,19 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
 					}));
 				});
 
-				receiver.webRtcEP.gatherCandidates(function(error) {
+				receiver.webRtcEndpoint.gatherCandidates(function(error) {
 					if (error) {
-						stopReceive(sessionId);
+						//stopReceive(sessionId);
+                        stopSend(sessionId);
 						return callback(error);
 					}
 				});
 
                 console.info('5. Connecting sender WebRtcEndpoint to receiver WebRtcEndpoint');
-				receiver.webRtcEP.connect(sender.webRtcEP, function(error) {
+				receiver.webRtcEndpoint.connect(sender.webRtcEndpoint, function(error) {
 					if (error) {
-						receiver.webRtcEP.release();
-						console.info(error);
+						receiver.webRtcEndpoint.release();
+						console.log(error);
 						return callback(error);
 					}
                     
@@ -603,14 +568,14 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
                                 //receiver.hubport = _calleeHubport;
                                 
                                 console.info('9. Connecting callerWebRtcEndpoint to callerHubport');
-                                sender.webRtcEP.connect(callerHubport, function (error) {
+                                sender.webRtcEndpoint.connect(callerHubport, function (error) {
                                     if (error) {
                                         pipeline.release();
                                         return callback(error);
                                     }
                                     
                                     console.info('10. Connecting calleeWebRtcEndpoint to calleeHubport');
-                                    receiver.webRtcEP.connect(calleeHubport, function (error) {
+                                    receiver.webRtcEndpoint.connect(calleeHubport, function (error) {
                                         if (error) {
                                             pipeline.release();
                                             return callback(error);
@@ -643,7 +608,7 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
                                                         console.error(error);
                                                         return callback(error);
                                                     }
-                                                    console.info("--> Recording call...");
+                                                    console.log("--> Recording call...");
                                                 });
                                             });
                                         }); 
@@ -663,16 +628,16 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
 function onIceCandidate(room, sessionId, _candidate) {
 	var candidate = kurento.register.complexTypes.IceCandidate(_candidate);
 
-	console.info('onIceCandidate called');
+	console.log('onIceCandidate called');
 	var receiver = room.receivers[sessionId];
 	if (!receiver) {
 		return callback('Error getting Receiver');
 	}
-	console.info('onIceCandidate receiver', receiver);
+	console.log('onIceCandidate receiver', receiver);
 
-	if (receiver.webRtcEP) {
+	if (receiver.webRtcEndpoint) {
 		console.info('Adding candidate');
-		receiver.webRtcEP.addIceCandidate(candidate);
+		receiver.webRtcEndpoint.addIceCandidate(candidate);
 	} else {
 		console.info('Queueing candidate');
 		receiver.candidateQueueVideo.push(candidate);
@@ -680,7 +645,7 @@ function onIceCandidate(room, sessionId, _candidate) {
 }
 
 function stopSend(room) {
-  console.info("stopSend");
+  console.log("stopSend");
 	if (!room) {
 		console.error("no room");
 		return;
@@ -688,9 +653,9 @@ function stopSend(room) {
 	if (room.pipeline) {
 		room.pipeline.release();
 	}
-	if (room.sender && room.sender.webRtcEP) {
-		room.sender.webRtcEP.release();
-		room.sender.webRtcEP = null;
+	if (room.sender && room.sender.webRtcEndpoint) {
+		room.sender.webRtcEndpoint.release();
+		room.sender.webRtcEndpoint = null;
 	}
 	// room.sender = null;
 	var index = rooms.indexOf(room);
@@ -700,38 +665,38 @@ function stopSend(room) {
   //TODO: release all receivers?
 };
 
-function stopReceive(room) {
-	console.info('TODO: stopReceive', room);
+/*function stopReceive(room) {
+	console.log('TODO: stopReceive', room);
 	if (!room) {
 		console.error("stopReceive no room");
 		return;
 	}
   // var receiver = receivers[sessionId];
-  // if (receiver && receiver.webRtcEP) {
-  //   receiver.webRtcEP.release();
-  //   console.info("Released receiving webRtcEP");
+  // if (receiver && receiver.webRtcEndpoint) {
+  //   receiver.webRtcEndpoint.release();
+  //   console.log("Released receiving webRtcEndpoint");
   // }
   // if (receiver && receiver.audioEndpoint) {
   //   receiver.audioEndpoint.release();
-  //   console.info("Released receiving audioEndpoint");
+  //   console.log("Released receiving audioEndpoint");
   // }
-}
+}*/
 
 // messaging
 function sendNotification() {
-    console.info ("Sending notification...");
-    /*agSender.Sender(msg_settings).send(message, options).on("success", function( response) {
-        console.info("success called", response);
-    });*/
-    agSender.Sender(msg_settings).send(message, options, function(error, response) {
-        if(!err) {
-            console.info("App messaging - Notification: success called", response);
+    console.log ("Sending notification...");
+    agSender.Sender(msg_settings).send(message, options).on("success", function( response) {
+        console.log("success called", response);
+    });
+    /*agSender.Sender( settings ).send( message, options, function( err, response ) {
+        if( !err ) {
+            console.log( "Notification: success called", response );
             return;
         }else{
-            console.info("App messaging - Notification: unsucessful call", response);
+            console.log( "Notification: unsucessful call", response );
             return;
         }
-    });
+    });*/
 }
 
 app.use(express.static(path.join(__dirname, 'static')));
