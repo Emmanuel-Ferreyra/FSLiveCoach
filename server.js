@@ -208,7 +208,11 @@ wss.on('connection', function(ws) {
                     }
 				});
 				break;
-
+            
+            case 'update':
+                console.log('Getting data from DB.');
+                initialiseDB();
+                break;
             case 'send':
                     console.log('Message sent by the mobile client.');
                     //stopCall('testing'); //TODO get current room name
