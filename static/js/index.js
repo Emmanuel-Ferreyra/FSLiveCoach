@@ -35,6 +35,9 @@ ws.onmessage = function(message) {
 	console.info('Received message: ' + message.data);
 
 	switch (parsedMessage.id) {
+        case 'incomingCall':
+            incomingCall(parsedMessage);
+            break;            
 		case 'startResponse':
 			startResponse(parsedMessage);
 			break;
@@ -116,6 +119,90 @@ function setState(nextState) {
 			return;
 	}
 	state = nextState;
+}
+
+const NO_CALL = 0;
+const PROCESSING_CALL = 1;
+const IN_CALL = 2;
+var callState = null
+
+function setCallState(nextState) {
+	switch (nextState) {
+	case NO_CALL:
+		$('#call').attr('disabled', false);
+		$('#terminate').attr('disabled', true);
+		break;
+
+	case PROCESSING_CALL:
+		$('#call').attr('disabled', true);
+		$('#terminate').attr('disabled', true);
+		break;
+	case IN_CALL:
+		$('#call').attr('disabled', true);
+		$('#terminate').attr('disabled', false);
+		break;
+	default:
+		return;
+	}
+	callState = nextState;
+}
+
+function incomingCall(message) {
+	// If busy just reject without disturbing user
+	/*if (callState != NO_CALL) {
+		var response = {
+			id : 'incomingCallResponse',
+			from : message.from,
+			callResponse : 'reject',
+			message : 'busy'
+
+		};
+		return sendMessage(response);
+	}*/
+
+	setCallState(PROCESSING_CALL);
+	if (confirm('User ' + message.from
+			+ ' is calling you. Do you accept the call?')) {
+		showSpinner(videoInput, videoOutput);
+
+		var options = {
+			localVideo : videoInput,
+			remoteVideo : videoOutput,
+			onicecandidate : onIceCandidate
+		}
+
+		webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
+				function(error) {
+					if (error) {
+						console.error(error);
+						setCallState(NO_CALL);
+					}
+
+					this.generateOffer(function(error, offerSdp) {
+						if (error) {
+							console.error(error);
+							setCallState(NO_CALL);
+						}
+						var response = {
+							id : 'incomingCallResponse',
+							from : message.from,
+							callResponse : 'accept',
+							sdpOffer : offerSdp
+						};
+						sendMessage(response);
+					});
+				});
+
+	} else {
+		var response = {
+			id : 'incomingCallResponse',
+			from : message.from,
+			callResponse : 'reject',
+			message : 'user declined'
+		};
+		sendMessage(response);
+		stop(true);
+	}
 }
 
 function startWebRtc() {
