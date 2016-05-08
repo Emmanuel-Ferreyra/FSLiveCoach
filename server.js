@@ -75,7 +75,6 @@ var server = app.listen(port, function() {
 });
 
 app.use(function(req, res, next) {
-    req.db = db;    //added for connection to db
 	console.log(req.protocol, req.method, req.path, req.get('Content-Type'));
 	next();
 });
