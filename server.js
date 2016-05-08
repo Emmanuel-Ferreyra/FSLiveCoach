@@ -13,6 +13,12 @@ var kurento = require('kurento-client');
 var fs = require('fs');
 var shortid = require('shortid');
 var agSender = require( 'unifiedpush-node-sender');
+// Database
+var MongoClient = require('mongodb').MongoClient;
+var assert = require('assert');
+// Connection URL 
+var dbUrl = 'mongodb://localhost:27017/FSLiveCoach';
+
 var config = require('./config');
 
 var Sender = require('./sender');
@@ -66,6 +72,7 @@ app.use(sessionHandler);
 
 var server = app.listen(port, function() {
 	console.log('Server started on port', port);
+    initialiseDB();
 });
 
 app.use(function(req, res, next) {
@@ -392,6 +399,39 @@ app.all('/message/:roomname/:clientId', function(req, res) {
  * Definition of helper classes
  */
 
+function findDocuments(db, callback) {
+    // Get the documents collection 
+    var collection = db.collection('documents');
+    // Find some documents 
+    collection.find({}).toArray(function(err, docs) {
+        assert.equal(err, null);
+        assert.equal(2, docs.length);
+        console.log("Found the following records");
+        console.dir(docs);
+        callback(docs);
+    });
+}
+
+function initialiseDB(operation){
+    // Use connect method to connect to the Server 
+    MongoClient.connect(dbUrl, function(err, db) {
+      assert.equal(null, err);
+      console.log("Connected correctly to database");
+        switch (operation){
+            case 'read_all':
+                findDocuments(db, function() {
+                    db.close();
+                });
+                break;
+            
+            default:
+                db.close();
+                break;
+        }
+    });
+}
+
+    
 function getKurentoClient(callback) {
 	if (kurentoClient !== null) {
 		return callback(null, kurentoClient);
