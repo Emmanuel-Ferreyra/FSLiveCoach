@@ -89,16 +89,14 @@ wss.on('connection', function(ws) {
 	ws.on('error', function(error) {
 		console.log('Connection ' + sessionId + ' error', error);
 		getRoomBySession(sessionId, function(err, room) {
-			//stopReceive(room);
-			stopSend(room);
+			stopCall(room);
 		});
 	});
 
 	ws.on('close', function() {
 		console.log('Connection ' + sessionId + ' closed');
 		getRoomBySession(sessionId, function(err, room) {
-			//stopReceive(room);
-			stopSend(room);
+			stopCall(room);
 		});
 	});
 
@@ -193,8 +191,7 @@ wss.on('connection', function(ws) {
 				getRoom(roomName, function(err, room) {
 					if (room) {
                         console.log('Stopping room' + room);
-						//stopReceive(room);
-                        stopSend(room);
+                        stopCall(room);
 					}else{
                         console.log('Stopping room. Error: No room defined.');    
                     }
@@ -203,7 +200,7 @@ wss.on('connection', function(ws) {
 
             case 'send':
                     console.log('Message sent by the mobile client.');
-                    stopSend('testing'); //TODO get current room name
+                    stopCall('testing'); //TODO get current room name
                 break;
                 
 			default:
@@ -269,7 +266,7 @@ app.all('/leave/:roomname/:clientId', function(req, res) {
   var clientId = req.params.clientId ? req.params.clientId : "emptyID";
 	getRoom(roomName, function(err, room) {
 		if (room) {
-			stopSend(room);
+			stopCall(room);
 		}
 		res.send('todo');
 	});
@@ -382,13 +379,47 @@ function getKurentoClient(callback) {
 	});
 }
 
+function getRecorder(room, callback){
+	if (!room) {
+		return callback('No Room');
+	}
+    
+	if (room.recorder !== null) {
+		console.log('Retrieving existent recorder.');
+		return callback(null, room.recorder);
+	}
+    
+    //Create RecorderEndpoint
+    var ts = Math.floor(new Date().getTime() / 1000);
+    //TODO Change absolut path to relative path
+    uri = videos_path + 'call_' + ts + '.webm';
+    var options = {
+        uri: uri,
+        useEncodedMedia: false
+    };
+    console.info('Creating Call RecorderEndpoint. File to be recorded: ' + uri);
+
+    getPipeline(room, function(error, pipeline) {
+		if (error) {
+			return callback(error);
+		}
+        pipeline.create('RecorderEndpoint', {uri: uri}, function (error, _callRecorderEndpoint) {
+            if (error) {
+                return callback(error);
+            }
+            room.recorder = _callRecorderEndpoint;
+            return callback(null, room.recorder);
+        });
+    });    
+}
+
 function getPipeline(room, callback) {
 	if (!room) {
 		return callback('No Room');
 	}
 
 	if (room.pipeline !== null) {
-		console.log('saved pipeline');
+		console.log('Retrieving existent pipeline.');
 		return callback(null, room.pipeline);
 	}
 	getKurentoClient(function(error, kurentoClient) {
@@ -461,8 +492,7 @@ function startSendWebRtc(room, sdpOffer, onCandidate, callback) {
 
 				sender.webRtcEndpoint.gatherCandidates(function(error) {
 					if (error) {
-						//stopReceive(sessionId);
-                        stopSend(sessionId);
+                        stopCall(sessionId);
 						return callback(error);
 					}
 				});
@@ -535,8 +565,7 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
 
 				receiver.webRtcEndpoint.gatherCandidates(function(error) {
 					if (error) {
-						//stopReceive(sessionId);
-                        stopSend(sessionId);
+                        stopCall(sessionId);
 						return callback(error);
 					}
 				});
@@ -591,28 +620,33 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
                                         }
                                         
                                         //Create RecorderEndpoint
-                                        var ts = Math.floor(new Date().getTime() / 1000);
+                                        //var ts = Math.floor(new Date().getTime() / 1000);
                                         //TODO Change absolut path to relative path
-                                        uri = videos_path + 'call_' + ts + '.webm';
-                                        var options = {
-                                            uri: uri,
-                                            useEncodedMedia: false
-                                        };
-                                        console.info('11. Creating Caller RecorderEndpoint. File to be recorded: ' + uri);
-
-                                        pipeline.create('RecorderEndpoint', {uri: uri}, function (error, callRecorderEndpoint) {
+                                        //uri = videos_path + 'call_' + ts + '.webm';
+                                        //var options = {
+                                        //    uri: uri,
+                                        //    useEncodedMedia: false
+                                        //};
+                                        console.info('11. Creating Call RecorderEndpoint');
+                                        
+                                        getRecorder(room, function(error, recorder) {
                                             if (error) {
                                                 return callback(error);
                                             }
+                                        
+                                        /*pipeline.create('RecorderEndpoint', {uri: uri}, function (error, recorder) {
+                                            if (error) {
+                                                return callback(error);
+                                            }*/
                                             
                                             console.info('12. Connecting callerHubport to callRecorderEndpoint');
-                                            callerHubport.connect(callRecorderEndpoint, function (error) {
+                                            callerHubport.connect(recorder, function (error) {
                                                 if (error) {
                                                     console.error(error);
                                                     return callback(error);
                                                 }
 
-                                                callRecorderEndpoint.record(function (error) {
+                                                recorder.record(function (error) {
                                                     if (error) {
                                                         console.error(error);
                                                         return callback(error);
@@ -654,21 +688,32 @@ function onIceCandidate(room, sessionId, _candidate) {
 	}
 }
 
-function stopSend(room) {
-  console.log("Starting stopSend method...");
-    
-    recording
+function stopCall(room) {
+  console.log("Starting stopCall method...");
     
 	if (!room) {
 		console.error("No room found.");
 		return;
 	}
     
-    recorder.stop(function(error){
-        if(error) console.log(error);
+    if (recording){
+        getRecorder(room, function(error, recorder) {
+            if (error) {
+                return callback(error);
+            }
+            recorder.stop(function(error){
+                console.info("Stoping recording...");
+                if(error) console.log(error);
+                room.pipeline.release();
+                room.sender.webRtcEndpoint.dispose();
+            });
+            recording = false;
+        });    
+    }else{
+        console.info("Stoping call...");
         room.pipeline.release();
-        room.sender.webRtcEndpoint.dispose();
-    });
+        room.sender.webRtcEndpoint.release();
+    }
     
 	/*if (room.pipeline) {
 		room.pipeline.release();
@@ -684,23 +729,6 @@ function stopSend(room) {
 	}
   //TODO: release all receivers?
 };
-
-/*function stopReceive(room) {
-	console.log('TODO: stopReceive', room);
-	if (!room) {
-		console.error("stopReceive no room");
-		return;
-	}
-  // var receiver = receivers[sessionId];
-  // if (receiver && receiver.webRtcEndpoint) {
-  //   receiver.webRtcEndpoint.release();
-  //   console.log("Released receiving webRtcEndpoint");
-  // }
-  // if (receiver && receiver.audioEndpoint) {
-  //   receiver.audioEndpoint.release();
-  //   console.log("Released receiving audioEndpoint");
-  // }
-}*/
 
 // messaging
 function sendNotification() {
