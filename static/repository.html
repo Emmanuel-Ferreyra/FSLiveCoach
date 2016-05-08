@@ -1,187 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="cache-control" content="no-cache">
-    <meta http-equiv="pragma" content="no-cache">
-    <meta http-equiv="expires" content="0">
-    <meta name="description" content="Live Assistance">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" sizes="192x192" href="img/BT.icon">
-    <!--link rel="shortcut icon" href="img/BT.png" type="image/png"/-->
-
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="bower_components/ekko-lightbox/dist/ekko-lightbox.min.css">
-    <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="bower_components/dataTables.net/dist/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="css/style.css">
-    
-    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" rel="stylesheet">
-
-    <!-- main CSS -->
-    <link href="css/style.css" rel="stylesheet">
-    <link href="css/pages/dashboard.css" rel="stylesheet">
-    <link href="css/main.css" rel="stylesheet">
-    
-    <!--[if lt IE 9]> <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script> <![endif]-->
-    <script src="bower_components/adapter.js/adapter.js"></script>
-    <script src="bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="bower_components/draggabilly/dist/draggabilly.pkgd.min.js"></script>
-    <script src="bower_components/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
-    <script src="bower_components/kurento-utils/js/kurento-utils.js"></script>
-    <script src="bower_components/dataTables.net/js/jquery.dataTables.min.js"></script>
-    
-    <script src="js/index.js"></script>
-</head>
-
-<body>
-    <div class="navbar navbar-fixed-top">
-        <div class="navbar-inner">
-            <div class="container">
-                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"><span
-                    class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span> </a>
-                <a class="brand" href="index.html"><img id="logo-navbar" src="/images/bt_logo-white.png" alt="logo" style="height: 30px;"> &nbsp; &nbsp;FS Live Assistance</a>
-                <div class="nav-collapse">
-                    <ul class="nav pull-right">
-                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Account <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a class="videoLink" href="#">Profile</a></li>
-                                <li><a class="videoLink" href="#">Settings</a></li>
-                                <li><a class="videoLink" href="#">Logout</a></li>
-                            </ul>
-                        </li>
-                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp;&nbsp;Help <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li><a class="videoLink" href="#">Help</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-                <!--/.nav-collapse -->
-            </div>
-            <!-- /container -->
-        </div>
-        <!-- /navbar-inner -->
-    </div>
-    <!-- /navbar -->
-    <div class="subnavbar">
-        <div class="subnavbar-inner">
-            <div class="container">
-                <ul class="mainnav">
-                    <li><a href="/" target="_self"><i class="fa fa-tachometer" aria-hidden="true"></i><span>Dashboard</span> </a> </li>
-                    <li class="active"><a href="repository.html" target="_self"><i class="fa fa-list" aria-hidden="true"></i><span>Archive</span> </a> </li>
-                    <li><a href="statistics.html" target="_self"><i class="fa fa-bar-chart" aria-hidden="true"></i><span>Stats</span> </a></li>
-                    <!-- <li><a href="charts.html"><i class="icon-bar-chart"></i><span>Charts</span> </a> </li> -->
-                </ul>
-            </div>
-            <!-- /container -->
-        </div>
-        <!-- /subnavbar-inner -->
-    </div>
-    <!-- /subnavbar -->
-    <div class="main">
-        <div class="main-inner">
-            <div class="container">
-                <div class="row">
-                    <div class="span7">
-                        <div class="widget">
-                            <!--div class="widget-header"> <i class="fa fa-list" aria-hidden="true"></i>
-                                <h3>Video Repository</h3>
-                            </div-->
-                            <!-- /widget-header -->
-                            <div class="info-box" style="align:center">
-                                <video id="videoplayer" controls></video>
-                            </div>
-                            <!-- /info-box -->
-                        </div>
-                        <!-- /widget -->
-                    </div>
-                    <!-- /span6 -->
-                    <div class="span5">
-                        <!-- /widget -->
-                        <div class="widget">
-                            <div class="widget widget-table action-table">
+    <head>
+        <link rel="import" href="header.html" >
+        <!-- additional css -->
+        <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" rel="stylesheet">
+        <link href="css/theme.css" rel="stylesheet">
+        <!--link href="css/pages/dashboard.css" rel="stylesheet">
+        <link href="css/main.css" rel="stylesheet"-->
+    </head>
+    <body>
+        <!-- navigation bar -->
+        <link rel="import" href="navigation.html" >
+        <!-- main -->
+        <div class="main">
+            <div class="main-inner">
+                <div class="container">
+                    <div class="row">
+                        <div class="span7">
+                            <div class="widget">
                                 <!--div class="widget-header"> <i class="fa fa-list" aria-hidden="true"></i>
                                     <h3>Video Repository</h3>
                                 </div-->
                                 <!-- /widget-header -->
-                                <div class="widget-content">
-                                    <table id="playlist" class="display compact" style="color:black">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Date</th>
-                                                <th class="td-actions">Play</th>
-                                                <th class="td-actions">Download</th>
-                                            </tr>
-                                        </thead>
-                                        <tfoot>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Date</th>
-                                                <th class="td-actions">Play</th>
-                                                <th class="td-actions">Download</th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                                <div class="info-box" style="align:center">
+                                    <video id="videoplayer" controls></video>
                                 </div>
-                                <!-- /widget-content -->
+                                <!-- /info-box -->
                             </div>
+                            <!-- /widget -->
                         </div>
                         <!-- /span6 -->
-                    </div>
-                    <!-- /row -->
-                </div>
-                <!-- /container -->
-            </div>
-            <!-- /main-inner -->
-        </div>
-        <!-- /main -->
-        <div class="extra">
-            <div class="extra-inner">
-                <div class="container">
-                    <div class="row">
-                        <div class="span3">
-                            <!--h4>
-                        About</h4>
-                    <ul>
-                        <li><a href="javascript:;">Contacts</a></li>
-                        <li><a href="javascript:;">Requirements</a></li>
-                    </ul-->
+                        <div class="span5">
+                            <!-- /widget -->
+                            <div class="widget">
+                                <div class="widget widget-table action-table">
+                                    <!--div class="widget-header"> <i class="fa fa-list" aria-hidden="true"></i>
+                                        <h3>Video Repository</h3>
+                                    </div-->
+                                    <!-- /widget-header -->
+                                    <div class="widget-content">
+                                        <table id="playlist" class="display compact" style="color:black">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Date</th>
+                                                    <th class="td-actions">Play</th>
+                                                    <th class="td-actions">Download</th>
+                                                </tr>
+                                            </thead>
+                                            <tfoot>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Date</th>
+                                                    <th class="td-actions">Play</th>
+                                                    <th class="td-actions">Download</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                    <!-- /widget-content -->
+                                </div>
+                            </div>
+                            <!-- /span6 -->
                         </div>
-                        <!-- /span3 -->
-                        <div class="span3">
-                            <!--h4>
-                        Support</h4>
-                    <ul>
-                        <li><a href="javascript:;">Tutorial</a></li>
-                        <li><a href="javascript:;">Feedback</a></li>
-                    </ul-->
-                        </div>
+                        <!-- /row -->
                     </div>
-                    <!-- /row -->
+                    <!-- /container -->
                 </div>
-                <!-- /container -->
+                <!-- /main-inner -->
             </div>
-            <!-- /extra-inner -->
         </div>
-        <!-- /extra -->
-        <div class="footer">
-            <div class="footer-inner">
-                <div class="container">
-                    <div class="row">
-                        <div class="span12"> <a href="http://www.bt.com">FS Live Assistance - Control Centre</a> </div>
-                        <!-- /span12 -->
-                    </div>
-                    <!-- /row -->
-                </div>
-                <!-- /container -->
-            </div>
-            <!-- /footer-inner -->
-        </div>
-        <!-- /footer -->
+        <!-- footer -->
+        <link rel="import" href="footer.html" >
         <!-- Javascript - Placed at the end of the document so the pages load faster -->
         <script>
             $(document).ready(function () {
@@ -191,7 +81,7 @@
                 var dir = 'http://52.19.221.103:8080/videos/';
                 var url_datasource = dir + 'videos_list.json';
                 var video = document.querySelector('video#videoplayer');
-                video.src = dir + "video1.webm";
+                video.src = dir + "call_1462549792.webm";
                 
                 var table = $('#playlist').DataTable({
                     ajax: {
@@ -226,6 +116,5 @@
                 } );
             });
         </script>
-</body>
-
+    </body>
 </html>
