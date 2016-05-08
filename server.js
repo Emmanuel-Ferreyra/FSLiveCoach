@@ -44,6 +44,7 @@ var msg_settings = {
       };
 
 var app = express();
+
 app.use(bodyParser.json({
 	type: 'text'
 }));
@@ -58,6 +59,10 @@ var sessionHandler = session({
 });
 
 app.use(sessionHandler);
+
+/*
+ * Server startup
+ */
 
 var server = app.listen(port, function() {
 	console.log('Server started on port', port);
@@ -217,6 +222,10 @@ wss.on('connection', function(ws) {
 	});
 });
 
+/*
+*   Methods for mobile clients
+*/
+
 app.all('/join/:roomname', function(req, res) {
   console.log('join called', req.body);
   var roomName = req.params.roomname ? req.params.roomname : "empty";
@@ -271,11 +280,16 @@ app.all('/join/:roomname', function(req, res) {
 app.all('/leave/:roomname/:clientId', function(req, res) {
     var roomName = req.params.roomname ? req.params.roomname : "empty";
     var clientId = req.params.clientId ? req.params.clientId : "emptyID";
-    console.log('/leave/:'+roomName+'/:'+clientId+' called', req.body);
+    console.log('/leave/:'+roomName+'/:'+clientId+' called', req.body.type);
     
+    //mobile client disconected
     getRoom(roomName, function(err, room) {
 		if (room) {
 			stopCall(room);
+            ws.send(JSON.stringify({
+                id: 'incomingCall',
+                from: 'mobile client'
+            }));
 		}else{
             console.log ('Room not found.');
         }
@@ -375,6 +389,10 @@ app.all('/message/:roomname/:clientId', function(req, res) {
 	});
 });
 
+/*
+ * Definition of helper classes
+ */
+
 function getKurentoClient(callback) {
 	if (kurentoClient !== null) {
 		return callback(null, kurentoClient);
@@ -394,16 +412,16 @@ function getRecorder(room, callback){
 	if (!room) {
 		return callback('No Room');
 	}
-    
-	/*if (room.recorder !== null) {
-		console.log('Retrieving existent recorder.');
-		return callback(null, room.recorder);
-	}*/
-    
+        
     getPipeline(room, function(error, pipeline) {
 		if (error) {
 			return callback(error);
 		}
+    
+        /*if (room.recorder !== null) {
+		  console.log('Retrieving existent recorder.');
+		  return callback(null, room.recorder);
+        }*/
         
         //Create RecorderEndpoint
         var ts = Math.floor(new Date().getTime() / 1000);
