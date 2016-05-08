@@ -73,7 +73,6 @@ app.use(function(req, res, next) {
 	next();
 });
 
-
 var wss = new ws.Server({
 	server: server,
 	path: '/ws'
@@ -286,10 +285,10 @@ app.all('/leave/:roomname/:clientId', function(req, res) {
     getRoom(roomName, function(err, room) {
 		if (room) {
 			stopCall(room);
-            ws.send(JSON.stringify({
+            /*ws.send(JSON.stringify({
                 id: 'incomingCall',
                 from: 'mobile client'
-            }));
+            }));*/
 		}else{
             console.log ('Room not found.');
         }
