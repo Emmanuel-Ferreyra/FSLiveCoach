@@ -384,10 +384,14 @@ function getRecorder(room, callback){
 		return callback('No Room');
 	}
     
-	if (room.recorder !== null) {
+    if (!pipeline) {
+		return callback('No pipeline');
+	}
+    
+	/*if (room.recorder !== null) {
 		console.log('Retrieving existent recorder.');
 		return callback(null, room.recorder);
-	}
+	}*/
     
     //Create RecorderEndpoint
     var ts = Math.floor(new Date().getTime() / 1000);
@@ -629,7 +633,7 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
                                         //};
                                         console.info('11. Creating Call RecorderEndpoint');
                                         
-                                        getRecorder(room, function(error, recorder) {
+                                        getRecorder(room, function(error, callRecorderEndpoint) {
                                             if (error) {
                                                 stopCall(room);
                                                 return callback(error);
@@ -641,13 +645,13 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
                                             }*/
                                             
                                             console.info('12. Connecting callerHubport to callRecorderEndpoint');
-                                            callerHubport.connect(recorder, function (error) {
+                                            callerHubport.connect(callRecorderEndpoint, function (error) {
                                                 if (error) {
                                                     console.error(error);
                                                     return callback(error);
                                                 }
 
-                                                recorder.record(function (error) {
+                                                callRecorderEndpoint.record(function (error) {
                                                     if (error) {
                                                         console.error(error);
                                                         return callback(error);
@@ -663,7 +667,6 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
                         });
                     });
 				});
-
 				return callback(null, sdpAnswer);
 			});
 		});
