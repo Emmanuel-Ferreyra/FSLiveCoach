@@ -1,12 +1,6 @@
-/*
- * (C) Copyright 2016.  All rights reserved.
- * 
- */
-
 {
-  "name": "FS_LiveCoach",
+  "name": "FSLiveCoach",
   "version": "1.0.0",
-  "description": "FS Live Coach app",
   "main": "index.html",
   "ignore": [
     "**/.*",
