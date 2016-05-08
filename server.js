@@ -103,7 +103,7 @@ wss.on('connection', function(ws) {
 
 	ws.on('message', function(_message) {
 		var message = JSON.parse(_message);
-		console.log('wss ' + sessionId + ' received message ', message);
+		console.log('Connection ' + sessionId + ' received message ', message);
 		var clientId = message.clientid ? message.clientid : "empty";
 		var roomname = message.roomid ? message.roomid : "emptyID";
 
@@ -191,12 +191,20 @@ wss.on('connection', function(ws) {
 				var roomName = message.roomName;
 				getRoom(roomName, function(err, room) {
 					if (room) {
+                        console.log('Stopping room' + room);
 						//stopReceive(room);
                         stopSend(room);
-					}
+					}else{
+                        console.log('Stopping room. Error: No room defined.');    
+                    }
 				});
 				break;
 
+            case 'send':
+                    console.log('Message sent by the mobile client.');
+                    stopSend('testing'); //TODO get current room name
+                break;
+                
 			default:
 				console.log('something else called');
 		}
@@ -633,7 +641,7 @@ function onIceCandidate(room, sessionId, _candidate) {
 	if (!receiver) {
 		return callback('Error getting Receiver');
 	}
-	console.log('onIceCandidate receiver', receiver);
+	console.log('onIceCandidate receiver');//, receiver);
 
 	if (receiver.webRtcEndpoint) {
 		console.info('Adding candidate');
