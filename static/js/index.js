@@ -171,7 +171,7 @@ function incomingCall(message) {
 			onicecandidate : onIceCandidate
 		}
 
-		webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
+		/*webRtcPeer = kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
 				function(error) {
 					if (error) {
 						console.error(error);
@@ -191,7 +191,7 @@ function incomingCall(message) {
 						};
 						sendMessage(response);
 					});
-				});
+				});*/
 
 	} else {
 		var response = {
