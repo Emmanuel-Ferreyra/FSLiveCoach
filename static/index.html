@@ -34,10 +34,41 @@
     
     <!-- additional css -->
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" rel="stylesheet">
-    <link href="css/main.css" rel="stylesheet">    
+    <link href="css/main.css" rel="stylesheet">
+    
+    <script charset="UTF-8" type="text/javascript" src="http://ecn.dev.virtualearth.net/mapcontrol/mapcontrol.ashx?v=7.0"></script>
+    <script type='text/JavaScript'>
+        //--------MAP----------------
+        var map = null;
+        var pinLayer, pinInfobox;
+
+        //HTML that generates the frame for the custom infobox
+        var pushpinFrameHTML = '<div class="infobox"><a class="infobox_close" href="javascript:closeInfobox()"><img src="/images/close.png"/></a><divontent">{content}</div></div><div class="infobox_pointer"><img src="/images/pointer_shadow.png"></div;'
+
+        function GetMap()
+        {
+            var map = new Microsoft.Maps.Map(document.getElementById("mapDiv"), {credentials:" AnrevaeW4L0lcoKirVyRULOQDBq_WSdiWWVIJDSQ61VPaQx6iUtx2lbpNsy2KJtv",
+                            center: new Microsoft.Maps.Location(52.05887200000001,1.2785710000000563),
+                            mapTypeId: Microsoft.Maps.MapTypeId.birdseye,
+                            zoom: 19});
+            map.entities.clear(); 
+
+            var infoboxOptions = {width :230, height :250, showCloseButton: false, zIndex: 0, offset:new Microsoft.Maps.Point(15,-70), showPointer: true, visible: true}; 
+
+            var defaultInfobox = new Microsoft.Maps.Infobox(map.getCenter(), infoboxOptions);    
+            map.entities.push(defaultInfobox);
+
+            var infoboxContent = '<div id="infoboxText"><h2>Task ID: EO-M4DEHX001-1</h2><br/><p><b>Name:</b> Frame,John ESJXF62<br/><b>EIN:</b> 608551287<br/><b>Location ID:</b> IP5 3RE<br/><b>Workgroup:</b> Light Cabling<br/><b>Work Type:</b> Light Cabling<br/><b>Job Type:</b> CBL </br><b>Importance Score:</b> 20</br><b>Business Priority:</b> 9</p></div>';
+            defaultInfobox.setHtmlContent(infoboxContent);                
+
+            var pushpinOptions = {icon: '/images/engineerAllocated.png', visible: true}; 
+            var pushpin= new Microsoft.Maps.Pushpin(map.getCenter(), pushpinOptions); 
+            map.entities.push(pushpin);
+        }             
+    </script>    
 </head>
 
-<body>
+<body onload="GetMap();">>
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container">
@@ -86,8 +117,33 @@
             <div class="main-inner">    
                 <div class="container">
                     <div class="row">
+                        <div class="span5">
+                            <div class="widget widget-nopad">
+                                <div class="widget-header"> <i class="fa fa-location-arrow" aria-hidden="true"></i>
+                                    <h3> Real Time Location</h3>
+                                </div>
+                                <!-- /widget-header -->
+                                <div class="widget big-stats-container">
+                                    <div class="widget-content">
+                                       <div id="mapDiv"></div> 
+                                    </div>                
+                                </div>
+                                <!-- /widget big-stats-container -->
+                            </div>
+                            <!-- /widget widget-nopad -->                
+                        </div>
+                        <div class="span7">
+                            <div id="videoBig">
+                                <video id="videoOutput" autoplay width="640px" height="480px" poster="img/webrtc.png"></video>
+                            </div>
+                            <div id="videoSmall">
+                                <video id="videoInput" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-5">
-                            <label class="control-label" for="name">Name</label>
+                                                        <label class="control-label" for="name">Name</label>
                             <div class="row">
                                 <div class="col-md-6">
                                     <input id="name" name="name" class="form-control" type="text" />
@@ -130,16 +186,9 @@
                                 <div class="col-md-12">
                                     <label id="errorMsg" class="control-label"></label>
                                 </div>
-                            </div>                 
+                            </div> 
                         </div>
-                        <div class="col-md-7">
-                            <div id="videoBig">
-                                <video id="videoOutput" autoplay width="640px" height="480px" poster="img/webrtc.png"></video>
-                            </div>
-                            <div id="videoSmall">
-                                <video id="videoInput" autoplay width="240px" height="180px" poster="img/webrtc.png"></video>
-                            </div>
-                        </div>
+                        <div class="col-md-7"></div>
                     </div>
                 </div>
             </div>
