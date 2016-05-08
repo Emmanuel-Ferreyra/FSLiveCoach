@@ -190,7 +190,7 @@ wss.on('connection', function(ws) {
 				var roomName = message.roomName;
 				getRoom(roomName, function(err, room) {
 					if (room) {
-                        console.log('Stopping room' + room);
+                        console.log('Stopping room ' + room.roomName);
                         stopCall(room);
 					}else{
                         console.log('Stopping room. Error: No room defined.');    
@@ -384,34 +384,31 @@ function getRecorder(room, callback){
 		return callback('No Room');
 	}
     
-    if (!pipeline) {
-		return callback('No pipeline');
-	}
-    
 	/*if (room.recorder !== null) {
 		console.log('Retrieving existent recorder.');
 		return callback(null, room.recorder);
 	}*/
     
-    //Create RecorderEndpoint
-    var ts = Math.floor(new Date().getTime() / 1000);
-    //TODO Change absolut path to relative path
-    uri = videos_path + 'call_' + ts + '.webm';
-    var options = {
-        uri: uri,
-        useEncodedMedia: false
-    };
-    console.info('Creating Call RecorderEndpoint. File to be recorded: ' + uri);
-
     getPipeline(room, function(error, pipeline) {
 		if (error) {
 			return callback(error);
 		}
+        
+        //Create RecorderEndpoint
+        var ts = Math.floor(new Date().getTime() / 1000);
+        //TODO Change absolut path to relative path
+        uri = videos_path + 'call_' + ts + '.webm';
+        var options = {
+            uri: uri,
+            useEncodedMedia: false
+        };
+        
         pipeline.create('RecorderEndpoint', {uri: uri}, function (error, _callRecorderEndpoint) {
             if (error) {
                 return callback(error);
             }
             room.recorder = _callRecorderEndpoint;
+            console.info('Creating Call RecorderEndpoint. File to be recorded: ' + uri);
             return callback(null, room.recorder);
         });
     });    
@@ -701,7 +698,28 @@ function stopCall(room) {
 	}
     
     if (recording){
-        getRecorder(room, function(error, recorder) {
+        if (room.recorder !== null) {
+            console.log('Retrieving existent recorder.');
+            recorder.stop(function(error){
+                console.info("Stoping recording...");
+                if(error) console.log(error);
+                //room.pipeline.release();
+                //room.sender.webRtcEndpoint.release();
+                if (room.pipeline) {
+                    room.pipeline.release();
+                    console.info("Pipeline released...");
+                }
+                if (room.sender && room.sender.webRtcEndpoint) {
+                    room.sender.webRtcEndpoint.release();
+                    room.sender.webRtcEndpoint = null;
+                    console.info("webRtcEndpoint released...");
+                }  
+            });
+            recording = false;
+        }else{
+            console.log('No existing recorder object to be stopped.');
+        }
+        /*getRecorder(room, function(error, recorder) {
             if (error) {
                 return callback(error);
             }
@@ -721,7 +739,7 @@ function stopCall(room) {
                 }  
             });
             recording = false;
-        });    
+        });  */  
     }else{
         console.info("Stoping call...");
         //room.pipeline.release();
