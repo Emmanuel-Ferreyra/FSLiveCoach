@@ -242,7 +242,7 @@ button[disabled] {
     background-color: rgba(255, 255, 255, 0.12);
 }
 
-input[type=text] {
+/*input[type=text] {
     border: none;
     border-bottom: solid 1px #4c4c4f;
     font-size: 1em;
@@ -261,7 +261,7 @@ input[type="text"]:focus {
 
 input[type="text"].invalid {
     border-bottom: solid 2px #F44336;
-}
+}*/
 
 label.error-label {
     color: #F44336;
