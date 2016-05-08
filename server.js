@@ -71,7 +71,7 @@ app.use(sessionHandler);
 
 var server = app.listen(port, function() {
 	console.log('Server started on port', port);
-    initialiseDB();
+    connectDB();
 });
 
 app.use(function(req, res, next) {
@@ -222,7 +222,10 @@ wss.on('connection', function(ws) {
                         }
                     }); */               
                 break;
-                
+            
+            case 'getData':
+                connectDB('read_all');
+                break;
 			default:
 				console.log('something else called');
 		}
@@ -412,7 +415,7 @@ function findDocuments(db, callback) {
     });
 }
 
-function initialiseDB(operation){
+function connectDB(operation){
     // Use connect method to connect to the Server 
     MongoClient.connect(dbUrl, function(err, db) {
       assert.equal(null, err);
