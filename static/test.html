@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>FS Live Assistance</title>
+    <script src="/js/jquery-1.7.2.min.js" type="text/javascript"></script>
+    <script charset="UTF-8" type="text/javascript" src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- modal video -->
+    <div id="player">
+        <video id="videoplayer" width="320" height="240" controls>
+            <source id="videosource" src="/images/video1.webm" type='video/webm; codecs="vp8, vorbis"'>
+        </video>
+
+        <div id="video_list">
+            <h1>Videos</h1>
+            <a id="video1.webm" class="videoLink" href="#">Video 1</a>
+            <a id="video2.webm" class="videoLink" href="#">Video 2</a>
+            <a id="video3.webm" class="videoLink" href="#">Video 3</a>
+        </div>
+    </div>
+
+    <table id="list_of_videos">
+        <tr><td><a id="video1.webm" class="videoLink" href="#">Video 1</a></td><td><a id='video1.webm' class='videoLink' href='#'><i class='fa fa-play' aria-hidden='true'></i></a></td></tr>
+        <tr><td><a id="video2.webm" class="videoLink" href="#">Video 2</a></td><td><a id='video2.webm' class='videoLink' href='#'><i class='fa fa-play' aria-hidden='true'></i></a></td></tr>
+        <tr><td><a id="video3.webm" class="videoLink" href="#">Video 3</a></td><td><a id='video3.webm' class='videoLink' href='#'><i class='fa fa-play' aria-hidden='true'></i></a></td></tr>
+    </table>
+    
+    <table id="playlist" class="display" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Play</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Play</th>
+                <th>Download</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <script>
+        $(document).ready(function () {
+            var dir = '/images/';
+            var url_datasource = dir + 'videos_list.json';
+
+            //var rows = $("#playlist > TBODY > TR");
+            
+            var table = $('#playlist').DataTable({
+                ajax: {
+                    url: url_datasource,
+                    dataSrc: 'data'
+                },
+                columns: [
+                    {data: 'name'},
+                    {data: 'date'},
+                    {data: 'play'},
+                    {data: 'download'}
+                ]
+            });
+
+            $('#playlist tbody').on('click', '.videoLink', function () {
+                //console.log("here:" + $(this).html());
+                //var data = table.row( this ).data();
+                //console.log( 'You clicked on '+data[0]+'\'s row' );
+                //var value = $(this).html() + ".webm";
+                var value = $(this).attr("id");
+                var video = document.querySelector('video#videoplayer');
+
+                console.log("Video selected: = " + value);
+
+                video.pause();
+
+                document.querySelector("#videoplayer > source").src = dir + value;
+
+                video.load();
+                video.play();
+                return false;                
+            } );
+            
+            /*$("table#list_of_videos a.videoLink").click(function()
+            {
+                console.log("here:" + $(this).html());
+            });*/
+            
+            $('.videoLink').click(function () {
+                var value = $(this).attr("id");
+                var video = document.querySelector('video#videoplayer');
+                //var source = document.querySelector("#videoplayer > source").src;
+
+                console.log("Video selected: = " + value);
+
+                video.pause();
+
+                //var source = document.createElement('source');
+                //source.setAttribute('src', value);
+                //source.setAttribute('type', 'video/webm; codecs="vp8, vorbis"');
+                //video.appendChild(source);
+
+                document.querySelector("#videoplayer > source").src = dir + value;
+
+                video.load();
+                video.play();
+                return false;
+            });
+        });
+    </script>
+</body>
+
+</html>

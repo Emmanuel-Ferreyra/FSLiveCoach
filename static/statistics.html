@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>FS Live Assistance</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="description" content="Live Assistance">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <meta itemprop="description" content="Live Assistance Control Centre">
+    <meta itemprop="image" content="/images/bt_logo-white.png">
+    <meta itemprop="name" content="FS Live Assistance">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#ffffff">
+    <base target="_blank">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" sizes="192x192" href="/images/BT.icon"> {% if not chromeapp %}
+    <link rel="canonical" href="{{ room_link }}"> {% endif %}
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,400,600" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/pages/dashboard.css" rel="stylesheet">
+    <link href="css/pages/reports.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"><span
+                    class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span> </a>
+                <a class="brand" href="index.html"><img id="logo-navbar" src="/images/bt_logo-white.png" alt="logo" style="height: 30px;"> &nbsp; &nbsp;FS Live Assistance</a>
+                <div class="nav-collapse">
+                    <ul class="nav pull-right">
+                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Account <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="javascript:;">Profile</a></li>
+                                <li><a href="javascript:;">Settings</a></li>
+                                <li><a href="javascript:;">Logout</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-info-circle" aria-hidden="true"></i>&nbsp;&nbsp;Help <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="javascript:;">Help</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
+            </div>
+            <!-- /container -->
+        </div>
+        <!-- /navbar-inner -->
+    </div>
+    <!-- /navbar -->
+    <div class="subnavbar">
+        <div class="subnavbar-inner">
+            <div class="container">
+                <ul class="mainnav">
+                    <li><a href="/" target="_self"><i class="fa fa-tachometer" aria-hidden="true"></i><span>Dashboard</span> </a> </li>
+                    <li><a href="repository.html" target="_self"><i class="fa fa-list" aria-hidden="true"></i><span>Archive</span> </a> </li>
+                    <li class="active"><a href="statistics.html" target="_self"><i class="fa fa-bar-chart" aria-hidden="true"></i><span>Stats</span> </a></li>
+                    <!-- <li><a href="charts.html"><i class="icon-bar-chart"></i><span>Charts</span> </a> </li> -->
+                </ul>
+            </div>
+            <!-- /container -->
+        </div>
+        <!-- /subnavbar-inner -->
+    </div>
+    <!-- /subnavbar -->
+    <div class="main">
+        <div class="main-inner">
+            <div class="container">
+                <div class="row">
+
+                    <div class="span12">
+
+                        <div class="info-box">
+                            <div class="row-fluid stats-box">
+                                <div class="span4">
+                                    <div class="stats-box-title">Calls</div>
+                                    <div class="stats-box-all-info"><i class="fa fa-phone" aria-hidden="true" style="color:#3366cc"></i> 100</div>
+                                    <div class="wrap-chart">
+                                        <div id="visitor-stat" class="chart" style="padding: 0px; position: relative;">
+                                            <canvas id="bar-chart1" class="chart-holder" height="150" width="325"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="span4">
+                                    <div class="stats-box-title">Tasks</div>
+                                    <div class="stats-box-all-info"><i class="fa fa-tasks" aria-hidden="true" style="color:#3366cc"></i> 66</div>
+                                    <div class="wrap-chart">
+                                        <div id="order-stat" class="chart" style="padding: 0px; position: relative;">
+                                            <canvas id="bar-chart2" class="chart-holder" height="150" width="325"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="span4">
+                                    <div class="stats-box-title">Videos</div>
+                                    <div class="stats-box-all-info"><i class="fa fa-video-camera" aria-hidden="true" style="color:#3366cc"></i> 15</div>
+                                    <div class="wrap-chart">
+
+                                        <div id="user-stat" class="chart" style="padding: 0px; position: relative;">
+                                            <canvas id="bar-chart3" class="chart-holder" height="150" width="325"></canvas>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <!-- /row -->
+
+                <div class="row">
+
+                    <div class="span6">
+
+                        <div class="widget">
+
+                            <div class="widget-header">
+                                <i class="fa fa-clock-o" aria-hidden="true"></i>
+                                <h3>Time</h3>
+                            </div>
+                            <!-- /widget-header -->
+
+                            <div class="widget-content">
+                                <canvas id="pie-chart" class="chart-holder" height="250" width="538"></canvas>
+                            </div>
+                            <!-- /widget-content -->
+
+                        </div>
+                        <!-- /widget -->
+
+
+
+
+                    </div>
+                    <!-- /span6 -->
+
+
+                    <div class="span6">
+
+                        <div class="widget">
+
+                            <div class="widget-header">
+                                <i class="fa fa-video-camera" aria-hidden="true"></i>
+                                <h3>Videos</h3>
+                            </div>
+                            <!-- /widget-header -->
+
+                            <div class="widget-content">
+                                <canvas id="bar-chart" class="chart-holder" height="250" width="538"></canvas>
+                            </div>
+                            <!-- /widget-content -->
+
+                        </div>
+                        <!-- /widget -->
+
+                    </div>
+                    <!-- /span6 -->
+
+                </div>
+                <!-- /row -->
+            </div>
+            <!-- /container -->
+        </div>
+        <!-- /main-inner -->
+    </div>
+    <!-- /main -->
+    <div class="extra">
+      <div class="extra-inner">
+        <div class="container">
+          <div class="row">
+                <div class="span3">
+                    <!--h4>
+                        About</h4>
+                    <ul>
+                        <li><a href="javascript:;">Contacts</a></li>
+                        <li><a href="javascript:;">Requirements</a></li>
+                    </ul-->
+                </div>
+                <!-- /span3 -->
+                <div class="span3">
+                    <!--h4>
+                        Support</h4>
+                    <ul>
+                        <li><a href="javascript:;">Tutorial</a></li>
+                        <li><a href="javascript:;">Feedback</a></li>
+                    </ul-->
+                </div>
+            </div>
+          <!-- /row --> 
+        </div>
+        <!-- /container --> 
+      </div>
+      <!-- /extra-inner --> 
+    </div>
+    <!-- /extra -->
+        <div class="footer">
+            <div class="footer-inner">
+                <div class="container">
+                    <div class="row">
+                        <div class="span12"> <a href="http://www.bt.com">FS Live Assistance - Control Centre</a> </div>
+                        <!-- /span12 -->
+                    </div>
+                    <!-- /row -->
+                </div>
+                <!-- /container -->
+            </div>
+            <!-- /footer-inner -->
+        </div>
+        <!-- /footer -->
+        <script src="js/jquery-1.7.2.min.js"></script>
+        <script src="js/excanvas.min.js"></script>
+        <!-- Added libraries for reporting and other utilities -->
+        <script src="/js/reporting.util.js"></script>
+        <script>
+            var pieData = [
+                {
+                    value: 30,
+                    color: "#F38630"
+				},
+                {
+                    value: 50,
+                    color: "#E0E4CC"
+				},
+                {
+                    value: 100,
+                    color: "#69D2E7"
+				}
+
+			];
+
+            var myPie = new Chart(document.getElementById("pie-chart").getContext("2d")).Pie(pieData);
+
+            var barChartData = {
+                labels: ["January", "February", "March", "April", "May", "June", "July"],
+                datasets: [
+                    {
+                        fillColor: "rgba(220,220,220,0.5)",
+                        strokeColor: "rgba(220,220,220,1)",
+                        data: [65, 59, 90, 81, 56, 55, 40]
+				},
+                    {
+                        fillColor: "rgba(151,187,205,0.5)",
+                        strokeColor: "rgba(151,187,205,1)",
+                        data: [28, 48, 40, 19, 96, 27, 100]
+				}
+			]
+
+            }
+
+            var myLine = new Chart(document.getElementById("bar-chart").getContext("2d")).Bar(barChartData);
+            var myLine = new Chart(document.getElementById("bar-chart1").getContext("2d")).Bar(barChartData);
+            var myLine = new Chart(document.getElementById("bar-chart2").getContext("2d")).Bar(barChartData);
+            var myLine = new Chart(document.getElementById("bar-chart3").getContext("2d")).Bar(barChartData);
+        </script>
+</body>
+
+</html>

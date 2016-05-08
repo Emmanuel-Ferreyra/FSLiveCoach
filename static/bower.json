@@ -16,6 +16,8 @@
     "draggabilly": "~1.2.4",
     "demo-console": "1.5.1",
     "ekko-lightbox": "~3.3.0",
-    "kurento-utils": "master"
+    "kurento-utils": "master",
+    "fontawesome": "~4.6.0",
+    "datatables.net": "1.10.11"
   }
 }
