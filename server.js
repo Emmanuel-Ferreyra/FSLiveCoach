@@ -211,7 +211,7 @@ wss.on('connection', function(ws) {
             
             case 'update':
                 console.log('Getting data from DB.');
-                initialiseDB();
+                initialiseDB('read_all');
                 break;
             case 'send':
                     console.log('Message sent by the mobile client.');
@@ -423,9 +423,17 @@ function initialiseDB(operation){
       console.log("Connected correctly to database");
         switch (operation){
             case 'read_all':
-                findDocuments(db, function() {
-                    db.close();
-                });
+                // Get the documents collection 
+                var collection = db.collection('documents');
+                // Find some documents 
+                collection.find({}).toArray(function(err, docs) {
+                    assert.equal(err, null);
+                    assert.equal(2, docs.length);
+                    console.log("Found the following records");
+                    console.dir(docs);
+                    callback(docs);
+                });                
+                db.close();
                 break;
             
             default:
@@ -434,7 +442,6 @@ function initialiseDB(operation){
         }
     });
 }
-
     
 function getKurentoClient(callback) {
 	if (kurentoClient !== null) {
