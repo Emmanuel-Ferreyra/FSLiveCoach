@@ -1,4 +1,3 @@
-//var ws = new WebSocket('wss://' + location.host + '/ws');
 var ws = new WebSocket('ws://' + location.host + '/ws');
 var videoInput;
 var videoOutput;
@@ -112,6 +111,9 @@ window.onload = function() {
 	document.getElementById('stop').addEventListener('click', function() {
 		stop();
 	});    
+	document.getElementById('update').addEventListener('click', function() {
+		update();
+	});  
     
 	roomNameInput = $("input[name='roomName']");
 }
@@ -325,6 +327,15 @@ function stop(message) {
 		}
 	}
 	hideSpinner(videoInput, videoOutput);
+}
+
+funcion update(){
+    console.log('Update table from DB.');
+    var message = {
+        id : 'update',
+        cmd : 'update'
+    };
+    sendMessage(message);    
 }
 
 function sendMessage(message) {
