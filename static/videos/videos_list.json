@@ -1,10 +1,10 @@
 { 
  "data": [
   {
-     "name": "<a id='11262955175880363.webm' class='videoLink' href='#'> 11262955175880363 </a>", 
+     "name": "<a id='call_1462549792.webm' class='videoLink' href='#'> call_1462549792 </a>", 
      "date": "04/24/2016", 
-     "play": "<a id='11262955175880363.webm' class='videoLink' href='#'><i class='fa fa-play' aria-hidden='true'></i></a>", 
-     "download": "<a href='http://52.50.72.207:81/uploads/11262955175880363.webm' download='11262955175880363.webm' type='video/webm'><i class='fa fa-download' aria-hidden='true'></i></a>" 		
+     "play": "<a id='call_1462549792.webm' class='videoLink' href='#'><i class='fa fa-play' aria-hidden='true'></i></a>", 
+     "download": "<a href='videos/call_1462549792.webm' download='call_1462549792.webm' type='video/webm'><i class='fa fa-download' aria-hidden='true'></i></a>" 		
   },  
   {
      "name": "<a id='video3.webm' class='videoLink' href='#'> video3 </a>", 
@@ -24,7 +24,5 @@
      "play": "<a id='video1.webm' class='videoLink' href='#'><i class='fa fa-play' aria-hidden='true'></i></a>", 
      "download": "<a href='http://52.50.72.207:81/uploads/video1.webm' download='video1.webm' type='video/webm'><i class='fa fa-download' aria-hidden='true'></i></a>" 		
   }  
- ],
- "queryRecordCount": 4,
- "totalRecordCount": 4 
+ ]
 }
