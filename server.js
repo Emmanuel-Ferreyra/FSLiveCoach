@@ -26,6 +26,7 @@ var port = config.port;
 
 var kurentoClient = null;
 var rooms = [];
+var recording = false;
 var videos_path = "file:///home/ubuntu/FSLiveCoach/static/videos/";  //TODO change absolute path to relative path
 
 var msg_settings = {
@@ -616,7 +617,8 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
                                                         console.error(error);
                                                         return callback(error);
                                                     }
-                                                    console.log("--> Recording call...");
+                                                    recording = true;
+                                                    console.log("--> Recording call..." + recording);
                                                 });
                                             });
                                         }); 
@@ -653,18 +655,28 @@ function onIceCandidate(room, sessionId, _candidate) {
 }
 
 function stopSend(room) {
-  console.log("stopSend");
+  console.log("Starting stopSend method...");
+    
+    recording
+    
 	if (!room) {
-		console.error("no room");
+		console.error("No room found.");
 		return;
 	}
-	if (room.pipeline) {
+    
+    recorder.stop(function(error){
+        if(error) console.log(error);
+        room.pipeline.release();
+        room.sender.webRtcEndpoint.dispose();
+    });
+    
+	/*if (room.pipeline) {
 		room.pipeline.release();
 	}
 	if (room.sender && room.sender.webRtcEndpoint) {
 		room.sender.webRtcEndpoint.release();
 		room.sender.webRtcEndpoint = null;
-	}
+	}*/
 	// room.sender = null;
 	var index = rooms.indexOf(room);
 	if (index > -1) {
