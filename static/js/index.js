@@ -329,7 +329,7 @@ function stop(message) {
 	hideSpinner(videoInput, videoOutput);
 }
 
-funcion update(){
+function update(){
     console.log('Update table from DB.');
     var message = {
         id : 'update',
