@@ -317,7 +317,7 @@ function stop(message) {
 
 		if (!message) {
 			var message = {
-				id : 'stop'
+				id : 'stop',
                 cmd : 'stop',
                 roomName: getRoomname()                
 			}
