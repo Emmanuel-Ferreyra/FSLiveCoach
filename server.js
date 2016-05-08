@@ -71,7 +71,7 @@ app.use(sessionHandler);
 
 var server = app.listen(port, function() {
 	console.log('Server started on port', port);
-    connectDB();
+    //connectDB();
 });
 
 app.use(function(req, res, next) {
@@ -223,7 +223,8 @@ wss.on('connection', function(ws) {
                 break;
             
             case 'getData':
-                connectDB('read_all');
+                //connectDB('read_all');
+                console.info('Requesting data from database...');
                 break;
 			default:
 				console.log('something else called');
