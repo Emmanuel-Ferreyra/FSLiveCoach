@@ -631,6 +631,7 @@ function startWebRtc(room, sessionId, ws, sdpOffer, callback) {
                                         
                                         getRecorder(room, function(error, recorder) {
                                             if (error) {
+                                                stopCall(room);
                                                 return callback(error);
                                             }
                                         
@@ -704,24 +705,35 @@ function stopCall(room) {
             recorder.stop(function(error){
                 console.info("Stoping recording...");
                 if(error) console.log(error);
-                room.pipeline.release();
-                room.sender.webRtcEndpoint.dispose();
+                //room.pipeline.release();
+                //room.sender.webRtcEndpoint.release();
+                if (room.pipeline) {
+                    room.pipeline.release();
+                    console.info("Pipeline released...");
+                }
+                if (room.sender && room.sender.webRtcEndpoint) {
+                    room.sender.webRtcEndpoint.release();
+                    room.sender.webRtcEndpoint = null;
+                    console.info("webRtcEndpoint released...");
+                }  
             });
             recording = false;
         });    
     }else{
         console.info("Stoping call...");
-        room.pipeline.release();
-        room.sender.webRtcEndpoint.release();
+        //room.pipeline.release();
+        //room.sender.webRtcEndpoint.release();
+        if (room.pipeline) {
+            room.pipeline.release();
+            console.info("Pipeline released...");
+        }
+        if (room.sender && room.sender.webRtcEndpoint) {
+            room.sender.webRtcEndpoint.release();
+            room.sender.webRtcEndpoint = null;
+            console.info("webRtcEndpoint released...");
+        }        
     }
     
-	/*if (room.pipeline) {
-		room.pipeline.release();
-	}
-	if (room.sender && room.sender.webRtcEndpoint) {
-		room.sender.webRtcEndpoint.release();
-		room.sender.webRtcEndpoint = null;
-	}*/
 	// room.sender = null;
 	var index = rooms.indexOf(room);
 	if (index > -1) {
