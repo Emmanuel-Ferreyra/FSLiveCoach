@@ -200,7 +200,15 @@ wss.on('connection', function(ws) {
 
             case 'send':
                     console.log('Message sent by the mobile client.');
-                    stopCall('testing'); //TODO get current room name
+                    //stopCall('testing'); //TODO get current room name
+                    /*getRoom(roomName, function(err, room) {
+                        if (room) {
+                            console.log('Stopping room ' + room.roomName);
+                            stopCall(room);
+                        }else{
+                            console.log('Stopping room. Error: No room defined.');    
+                        }
+                    }); */               
                 break;
                 
 			default:
@@ -261,30 +269,34 @@ app.all('/join/:roomname', function(req, res) {
 });
 
 app.all('/leave/:roomname/:clientId', function(req, res) {
-  console.log('leave called', req.body);
-  var roomName = req.params.roomname ? req.params.roomname : "empty";
-  var clientId = req.params.clientId ? req.params.clientId : "emptyID";
-	getRoom(roomName, function(err, room) {
+    var roomName = req.params.roomname ? req.params.roomname : "empty";
+    var clientId = req.params.clientId ? req.params.clientId : "emptyID";
+    console.log('/leave/:'+roomName+'/:'+clientId+' called', req.body);
+    
+    getRoom(roomName, function(err, room) {
 		if (room) {
 			stopCall(room);
-		}
+		}else{
+            console.log ('Room not found.');
+        }
+        
 		res.send('todo');
 	});
 });
 
 app.all('/turn', function(req, res) {
-  console.log('turn called', req.body);
+  console.log('/turn called', req.body);
 
   var response = config.turn;
   res.json(response);
 });
 
 app.all('/message/:roomname/:clientId', function(req, res) {
-	console.log('message called', req.body.type);
 	var roomName = req.params.roomname ? req.params.roomname : "empty";
 	var clientId = req.params.clientId ? req.params.clientId : "emptyID";
 	var message = req.body;
-	getRoom(roomName, function(err, room) {
+	console.log('/message/:'+roomName+'/:'+clientId+' called', req.body.type);
+    getRoom(roomName, function(err, room) {
 		if (err) {
 			res.json({
 				"result": "ERROR",
@@ -292,10 +304,9 @@ app.all('/message/:roomname/:clientId', function(req, res) {
 			});
 		}
 		if (!room) {
-			//I dunno
+			console.log ('Room not found.');
 		}
 
-		// console.log(message, roomName, id);
 		switch (message.type) {
 			case 'candidate':
 				var sender = room.sender;
@@ -698,9 +709,9 @@ function stopCall(room) {
 	}
     
     if (recording){
-        if (room.recorder !== null) {
+        /*if (room.recorder !== null) {
             console.log('Retrieving existent recorder.');
-            recorder.stop(function(error){
+            room.recorder.stop(function(error){
                 console.info("Stoping recording...");
                 if(error) console.log(error);
                 //room.pipeline.release();
@@ -718,8 +729,8 @@ function stopCall(room) {
             recording = false;
         }else{
             console.log('No existing recorder object to be stopped.');
-        }
-        /*getRecorder(room, function(error, recorder) {
+        }*/
+        getRecorder(room, function(error, recorder) {
             if (error) {
                 return callback(error);
             }
@@ -739,7 +750,7 @@ function stopCall(room) {
                 }  
             });
             recording = false;
-        });  */  
+        });
     }else{
         console.info("Stoping call...");
         //room.pipeline.release();
@@ -766,18 +777,18 @@ function stopCall(room) {
 // messaging
 function sendNotification() {
     console.log ("Sending notification...");
-    agSender.Sender(msg_settings).send(message, options).on("success", function( response) {
+    /*agSender.Sender(msg_settings).send(message, options).on("success", function( response) {
         console.log("success called", response);
-    });
-    /*agSender.Sender( settings ).send( message, options, function( err, response ) {
-        if( !err ) {
+    });*/
+    agSender.Sender(msg_settings).send(message, options, function(err, response) {
+        if(!err) {
             console.log( "Notification: success called", response );
             return;
         }else{
             console.log( "Notification: unsucessful call", response );
             return;
         }
-    });*/
+    });
 }
 
 app.use(express.static(path.join(__dirname, 'static')));
