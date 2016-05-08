@@ -112,7 +112,9 @@ window.onload = function() {
 	document.getElementById('stop').addEventListener('click', function() {
 		stop();
 	});    
-    
+	document.getElementById('update').addEventListener('click', function() {
+		getData();
+	});     
 	roomNameInput = $("input[name='roomName']");
 }
 
@@ -305,6 +307,15 @@ function call() {
 			sendMessage(message);
 		});
 	});
+}
+
+function getData(){
+    console.log('Get data from DB...');
+	var message = {
+        id : 'getData',
+		cmd: 'getData'
+	};
+	sendMessage(message);    
 }
 
 function stop(message) {
